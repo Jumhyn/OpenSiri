@@ -155,6 +155,7 @@
     }
     return NO;
 }
+//again, thank you theiostream.
 
 - (void)assistantConnection:(id)arg1 didRecognizeSpeechPhrases:(id)arg2 correctionIdentifier:(id)arg3 {
     AFSpeechToken *word1 = [[[(NSArray*)arg2 objectAtIndex:0] objectAtIndex:0] objectAtIndex:0];
@@ -168,102 +169,6 @@
         %orig;
         return;
     }
-    /*
-    BOOL twoWords = NO;
-    AFSpeechToken *word2;
-    if ([(NSArray*)arg2 count] > 1) {
-        word2 = [[[(NSArray*)arg2 objectAtIndex:1] objectAtIndex:0] objectAtIndex:0];
-        twoWords = YES;
-    }
-    if ([command caseInsensitiveCompare:@"open settings"]) {
-        [self dismissAssistantWithOpenIdentifier:@"com.apple.Preferences"];
-    }
-    if ([[word1 text] caseInsensitiveCompare:@"Open"] == NSOrderedSame || [[word1 text] caseInsensitiveCompare:@"launch"] == NSOrderedSame) {
-        if (twoWords) {
-            NSString *word2text = [word2 text];
-            //if ([word2text caseInsensitiveCompare:@"settings"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.Preferences"];
-            //}
-            if ([word2text caseInsensitiveCompare:@"ipod"] == NSOrderedSame || [word2text caseInsensitiveCompare:@"music"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.mobileipod"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"browser"] == NSOrderedSame || [word2text caseInsensitiveCompare:@"safari"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.mobilesafari"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"youtube"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.youtube"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"itunes"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.MobileStore"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"app"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.AppStore"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"messages"] == NSOrderedSame || [word2text caseInsensitiveCompare:@"texting"] == NSOrderedSame || [word2text caseInsensitiveCompare:@"sms"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.MobileSMS"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"calendar"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.mobilecalendar"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"camera"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.camera"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"calculator"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.calculator"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"phone"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.mobilephone"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"photos"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.mobileslideshow"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"videos"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.videos"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"maps"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.Maps"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"weather"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.weather"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"notes"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.mobilenotes"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"reminders"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.reminders"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"clock"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.mobiletimer"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"contacts"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.MobileAddressBook"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"compass"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.compass"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"voice"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.VoiceMemos"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"game"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.gamecenter"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"mail"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.mobilemail"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"stocks"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.apple.stocks"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"facebook"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.facebook.Facebook"];
-            }
-            else if ([word2text caseInsensitiveCompare:@"twitter"] == NSOrderedSame) {
-                [self dismissAssistantWithOpenIdentifier:@"com.atebits.Tweetie2"];
-            }
-        }
-    }
-    else {
-        %orig;
-    }*/
 }
 
 %new(v@:@) 

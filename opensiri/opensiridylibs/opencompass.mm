@@ -2,7 +2,7 @@
 #import <objc/runtime.h>
 
 extern "C" void* OSCommand() {
-    return [NSArray arrayWithObjects:@"open compass", nil];
+    return [NSArray arrayWithObjects:@"open compass", @"launch compass", nil];
 }
 
 extern "C" void OSAction() {

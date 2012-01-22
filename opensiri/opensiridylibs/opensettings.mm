@@ -2,7 +2,7 @@
 #import <objc/runtime.h>
 
 extern "C" void* OSCommand() {
-    return [NSArray arrayWithObjects:@"open settings", @"open preferences", nil];
+    return [NSArray arrayWithObjects:@"open settings", @"open preferences", @"launch settings", @"launch preferences", nil];
 }
 
 extern "C" void OSAction() {

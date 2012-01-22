@@ -2,7 +2,7 @@
 #import <objc/runtime.h>
 
 extern "C" void* OSCommand() {
-    return [NSArray arrayWithObjects:@"open weather", nil];
+    return [NSArray arrayWithObjects:@"open weather", @"launch weather", nil];
 }
 
 extern "C" void OSAction() {

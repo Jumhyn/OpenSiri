@@ -2,7 +2,7 @@
 #import <objc/runtime.h>
 
 extern "C" void* OSCommand() {
-    return [NSArray arrayWithObjects:@"open notes", nil];
+    return [NSArray arrayWithObjects:@"open notes", @"launch notes", nil];
 }
 
 extern "C" void OSAction() {

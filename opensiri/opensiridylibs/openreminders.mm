@@ -2,7 +2,7 @@
 #import <objc/runtime.h>
 
 extern "C" void* OSCommand() {
-    return [NSArray arrayWithObjects:@"open reminders", nil];
+    return [NSArray arrayWithObjects:@"open reminders", @"launch reminders", nil];
 }
 
 extern "C" void OSAction() {

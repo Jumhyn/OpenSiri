@@ -2,7 +2,7 @@
 #import <objc/runtime.h>
 
 extern "C" void* OSCommand() {
-    return [NSArray arrayWithObjects:@"open voice memos", nil];
+    return [NSArray arrayWithObjects:@"open voice memos", @"launch voice memos", nil];
 }
 
 extern "C" void OSAction() {

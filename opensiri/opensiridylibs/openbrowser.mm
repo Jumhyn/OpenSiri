@@ -2,7 +2,7 @@
 #import <objc/runtime.h>
 
 extern "C" void* OSCommand() {
-    return [NSArray arrayWithObjects:@"open browser", @"open safari", nil];
+    return [NSArray arrayWithObjects:@"open browser", @"open safari", @"launch browser", @"launch safari", nil];
 }
 
 extern "C" void OSAction() {

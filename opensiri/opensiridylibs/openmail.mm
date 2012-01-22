@@ -2,7 +2,7 @@
 #import <objc/runtime.h>
 
 extern "C" void* OSCommand() {
-    return [NSArray arrayWithObjects:@"open mail", nil];
+    return [NSArray arrayWithObjects:@"open mail", @"launch mail", nil];
 }
 
 extern "C" void OSAction() {

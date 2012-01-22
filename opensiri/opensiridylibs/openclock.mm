@@ -2,7 +2,7 @@
 #import <objc/runtime.h>
 
 extern "C" void* OSCommand() {
-    return [NSArray arrayWithObjects:@"open clock", nil];
+    return [NSArray arrayWithObjects:@"open clock", @"launch clock", nil];
 }
 
 extern "C" void OSAction() {

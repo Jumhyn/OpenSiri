@@ -2,7 +2,7 @@
 #import <objc/runtime.h>
 
 extern "C" void* OSCommand() {
-    return [NSArray arrayWithObjects:@"open calculator", nil];
+    return [NSArray arrayWithObjects:@"open calculator", @"launch calculator", nil];
 }
 
 extern "C" void OSAction() {

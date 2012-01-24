@@ -2,6 +2,8 @@
 
 #define DYLIB_PATH @"/var/mobile/Library/OpenSiri/"
 
+typedef void* (*function)();
+
 @interface NSObject (AddMethod)
 -(NSString*)className;
 @end
@@ -66,7 +68,7 @@
 %hook SBAssistantController
 
 %new(@@:@)
--(NSString *)stringFromSpeechTokenArray:(NSArray*)arr {
+-(NSString *)OSstringFromSpeechTokenArray:(NSArray*)arr {
     NSString* ret = [[[[arr objectAtIndex:0] objectAtIndex:0] objectAtIndex:0] text];
     if ([[[arr objectAtIndex:0] objectAtIndex:0] count] > 1) {
         for (int j=1; j<[[[arr objectAtIndex:0] objectAtIndex:0] count]; j++) {
@@ -88,7 +90,7 @@
 }
 
 %new(v@:@)
--(void)handleCustomSpeechCommand:(NSString*)command {
+-(void)OShandleCustomSpeechCommand:(NSString*)command {
     for (unsigned int i=0; i<[[OSControl dylibs] count]; i++) {
 		NSLog(@"================ Crap called. Index %d; loaded %@", i, [[OSControl dylibs] objectAtIndex:i]);
 
@@ -101,29 +103,39 @@
         
         NSLog(@"[OpenSiri] Loaded %@", [[OSControl dylibs] objectAtIndex:i]);
 
-		void* cmdcallback = dlsym(handle, "OSCommand");
+		//void* cmdcallback = dlsym(handle, "OSCommand");
+        int (*cmdcallback)(NSString*) = (int (*)(NSString*))dlsym(handle, "OSActionString");
 		if (cmdcallback == NULL) {
 			NSLog(@"[OpenSiri] Error. Could not read function void* OSCommand(). Talk to the developer of %@ for troubleshooting.", [[OSControl dylibs] objectAtIndex:i]);
 			return;
 		}
         
-        NSArray *cmdArr = (NSArray *)((void* (*)(void)) cmdcallback)();
-        for (int j=0; j<[cmdArr count]; j++) {
-            if ([command caseInsensitiveCompare:[cmdArr objectAtIndex:j]] == NSOrderedSame) {
-                void* actioncallback = dlsym(handle, "OSAction");
-                if (actioncallback == NULL) {
-                    NSLog(@"[OpenSiri] Error. Could not read function void OSAction(). Talk to the developer of %@ for troubleshooting.", [[OSControl dylibs] objectAtIndex:i]);
-                    return;
+        BOOL respondsToCommand = cmdcallback(command);
+        //for (int j=0; j<[cmdArr count]; j++) {
+            if (respondsToCommand) {
+                //function actionstringcallback;
+                //*(void**)(&actionstringcallback) = dlsym(handle, "OSActionString");
+                int (*fun)(NSString*) = (int (*)(NSString*))dlsym(handle, "OSActionString");
+                if (fun == NULL) {
+                    NSLog(@"[OpenSiri] Could not read function void OSActionString(). Trying OSAction();");
+                    void* actioncallback = dlsym(handle, "OSAction");
+                    if (actioncallback == NULL) {
+                        NSLog(@"[OpenSiri] ERROR: Could not load function OSActionString() or OSAction(). Talk to the developer of %@ for troubleshooting.", [[OSControl dylibs] objectAtIndex:i]);
+                        return;
+                    }
+                    ((void (*)(void)) actioncallback)();
+                    
                 }
-
-                ((void (*)(void)) actioncallback)();
+                else {
+                    fun(command);
+                }
             }
-        }
+        //}
     }
 }
 
 %new(B@:@) 
--(BOOL)respondsToCustomCommand:(NSString*)command {
+-(BOOL)OSrespondsToCustomCommand:(NSString*)command {
     NSLog(@"Checking support for command \"%@\"...", command);
     for (unsigned int i=0; i<[[OSControl dylibs] count]; i++) {
 		NSLog(@"================ Crap called. Index %d; loaded %@", i, [[OSControl dylibs] objectAtIndex:i]);
@@ -137,32 +149,32 @@
         
         NSLog(@"[OpenSiri] Loaded %@", [[OSControl dylibs] objectAtIndex:i]);
 
-		void* cmdcallback = dlsym(handle, "OSCommand");
+		//void* cmdcallback = dlsym(handle, "OSCommand");
+        int (*cmdcallback)(NSString*) = (int (*)(NSString*))dlsym(handle, "OSActionString");
 		if (cmdcallback == NULL) {
 			NSLog(@"[OpenSiri] Error. Could not read function void* OSCommand(). Talk to the developer of %@ for troubleshooting.", [[OSControl dylibs] objectAtIndex:i]);
 			break;
 		}
         
-        NSArray *cmdArr = (NSArray *)((void* (*)(void)) cmdcallback)();
-        NSLog(@"Detected command \"%@\"", cmdArr);
+        return cmdcallback(command);
+        //NSArray *cmdArr = (NSArray *)((void* (*)(void)) cmdcallback)();
         
-        for (int j=0; j<[cmdArr count]; j++) {
-            if ([command caseInsensitiveCompare:[cmdArr objectAtIndex:j]] == NSOrderedSame) {   
-                NSLog(@"[OpenSiri] dybib match found");
-                return YES;
-            }
-        }
+//        for (int j=0; j<[cmdArr count]; j++) {
+//            if ([command caseInsensitiveCompare:[cmdArr objectAtIndex:j]] == NSOrderedSame) {   
+//                NSLog(@"[OpenSiri] dybib match found");
+//                return YES;
+//            }
+//        }
     }
     return NO;
 }
 //again, thank you theiostream.
 
 - (void)assistantConnection:(id)arg1 didRecognizeSpeechPhrases:(id)arg2 correctionIdentifier:(id)arg3 {
-    AFSpeechToken *word1 = [[[(NSArray*)arg2 objectAtIndex:0] objectAtIndex:0] objectAtIndex:0];
     NSLog(@"[OpenSiri] Received speech phrases: %@", arg2);
-    NSString *command = [self stringFromSpeechTokenArray:arg2];
-    if ([self respondsToCustomCommand:command]) {
-        [self handleCustomSpeechCommand:command];
+    NSString *command = [self OSstringFromSpeechTokenArray:arg2];
+    if ([self OSrespondsToCustomCommand:command]) {
+        [self OShandleCustomSpeechCommand:command];
         return;
     }
     else {
@@ -172,13 +184,13 @@
 }
 
 %new(v@:@) 
--(void)handleTimer:(NSTimer*)sender {
+-(void)OShandleTimer:(NSTimer*)sender {
     SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithDisplayIdentifier:[sender userInfo]];
     [[%c(SBUIController) sharedInstance] activateApplicationFromSwitcher:app];
 }
 
 %new(v@:@) 
--(void)dismissAssistantWithOpenIdentifier:(NSString*)identifier {
+-(void)OSdismissAssistantWithOpenIdentifier:(NSString*)identifier {
     [self dismissAssistant];
     if ([[%c(SBAwayController) sharedAwayController] isLocked]) {
         return;
@@ -194,7 +206,7 @@
         }
     }
     if ([[[%c(SBUIController) sharedInstance] window] isKeyWindow]) {
-        [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(handleTimer:) userInfo:identifier repeats:NO];
+        [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(OShandleTimer:) userInfo:identifier repeats:NO];
     }
     else {
         SBApplication *app = [[%c(SBApplicationController) sharedInstance] applicationWithDisplayIdentifier:identifier];

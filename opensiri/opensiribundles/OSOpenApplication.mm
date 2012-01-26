@@ -1,18 +1,26 @@
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 #import <substrate.h>
+#import "OSProtocol.h"
 
 @class SBApplication;
 
-extern "C" BOOL OSRespondsToCommand(NSString* command) {
+
+@interface OSOpenApplication : NSObject <OSPlugin> {}
+@end
+
+@implementation OSOpenApplication
+
+-(BOOL)OSRespondsToCommand:(NSString *)command {
     if ([[command lowercaseString] hasPrefix:@"open "] || [[command lowercaseString] hasPrefix:@"launch "]) {
         return YES;
     }
     return NO;
 }
 
-extern "C" void OSActionString(NSString *actionString) {
-    actionString = [actionString lowercaseString];
+-(void)OSHandleCommand:(NSString *)command {
+    NSString *actionString = [command lowercaseString];
     NSRange rangeOfPrefix = [actionString rangeOfString:@"open "];
     if (rangeOfPrefix.location == NSNotFound) {
         rangeOfPrefix = [actionString rangeOfString:@"launch "];
@@ -32,3 +40,5 @@ extern "C" void OSActionString(NSString *actionString) {
         }
     }
 }
+
+@end

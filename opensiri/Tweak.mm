@@ -1,8 +1,9 @@
 #import <dlfcn.h>
+#import "opensiribundles/OSProtocol.h"
 
 #define DYLIB_PATH @"/var/mobile/Library/OpenSiri/"
+#define BUNDLE_PATH @"/var/mobile/Library/OpenSiri/Bundles/"
 
-typedef void* (*function)();
 
 @interface NSObject (AddMethod)
 -(NSString*)className;
@@ -45,19 +46,21 @@ typedef void* (*function)();
 @end
 
 @interface OSControl : NSObject {}
-+(NSMutableArray *)dylibs;
++(NSMutableArray *)bundles;
 @end
 
 
 @implementation OSControl
-+(NSMutableArray*)dylibs {
++(NSMutableArray*)bundles {
     NSMutableArray *d = [[NSMutableArray alloc] init];
 	NSFileManager *fm = [[[NSFileManager alloc] init] autorelease];
 
-	for (NSString *p in [fm contentsOfDirectoryAtPath:DYLIB_PATH error:nil]) {
-		if ([[p pathExtension] isEqualToString:@"dylib"])
+	for (NSString *p in [fm contentsOfDirectoryAtPath:BUNDLE_PATH error:nil]) {
+		if ([[p pathExtension] isEqualToString:@"bundle"])
 			[d addObject:p];
 	}
+    
+    NSLog(@"Found bundles: %@", d);
 
 	return d;
 }
@@ -91,80 +94,42 @@ typedef void* (*function)();
 
 %new(v@:@)
 -(void)OShandleCustomSpeechCommand:(NSString*)command {
-    for (unsigned int i=0; i<[[OSControl dylibs] count]; i++) {
-		NSLog(@"================ Crap called. Index %d; loaded %@", i, [[OSControl dylibs] objectAtIndex:i]);
-
-		void* handle = dlopen([[[NSString stringWithFormat:DYLIB_PATH] stringByAppendingString:[[OSControl dylibs] objectAtIndex:i]] UTF8String], RTLD_LAZY);
-       
-        if (handle == NULL) {
-			NSLog(@"[OpenSiri] 0_0 Error. Could not load dylib %@", [[OSControl dylibs] objectAtIndex:i]);
-			continue;
-		}
-        
-        NSLog(@"[OpenSiri] Loaded %@", [[OSControl dylibs] objectAtIndex:i]);
-
-		//void* cmdcallback = dlsym(handle, "OSCommand");
-        int (*cmdcallback)(NSString*) = (int (*)(NSString*))dlsym(handle, "OSActionString");
-		if (cmdcallback == NULL) {
-			NSLog(@"[OpenSiri] Error. Could not read function void* OSCommand(). Talk to the developer of %@ for troubleshooting.", [[OSControl dylibs] objectAtIndex:i]);
-			return;
-		}
-        
-        BOOL respondsToCommand = cmdcallback(command);
-        //for (int j=0; j<[cmdArr count]; j++) {
-            if (respondsToCommand) {
-                //function actionstringcallback;
-                //*(void**)(&actionstringcallback) = dlsym(handle, "OSActionString");
-                int (*fun)(NSString*) = (int (*)(NSString*))dlsym(handle, "OSActionString");
-                if (fun == NULL) {
-                    NSLog(@"[OpenSiri] Could not read function void OSActionString(). Trying OSAction();");
-                    void* actioncallback = dlsym(handle, "OSAction");
-                    if (actioncallback == NULL) {
-                        NSLog(@"[OpenSiri] ERROR: Could not load function OSActionString() or OSAction(). Talk to the developer of %@ for troubleshooting.", [[OSControl dylibs] objectAtIndex:i]);
-                        return;
-                    }
-                    ((void (*)(void)) actioncallback)();
-                    
-                }
-                else {
-                    fun(command);
-                }
+    for (NSString *bundleStr in [OSControl bundles]) {
+        NSBundle *bundle = [NSBundle bundleWithPath:[[NSString stringWithFormat:BUNDLE_PATH] stringByAppendingString:bundleStr]];
+        NSError *err;
+        if (![bundle loadAndReturnError:&err]) {
+            NSLog(@"ERROR -- continuing");
+            continue;
+        }
+        Class pluginClass;
+        id plugin;
+        if ((pluginClass = [bundle principalClass])) {
+            if ([pluginClass conformsToProtocol:@protocol(OSPlugin)]) {
+                plugin = [[pluginClass alloc] init];
+                [plugin OSHandleCommand:command];
             }
-        //}
+        }
     }
 }
 
 %new(B@:@) 
 -(BOOL)OSrespondsToCustomCommand:(NSString*)command {
-    NSLog(@"Checking support for command \"%@\"...", command);
-    for (unsigned int i=0; i<[[OSControl dylibs] count]; i++) {
-		NSLog(@"================ Crap called. Index %d; loaded %@", i, [[OSControl dylibs] objectAtIndex:i]);
-
-		void* handle = dlopen([[[NSString stringWithFormat:DYLIB_PATH] stringByAppendingString:[[OSControl dylibs] objectAtIndex:i]] UTF8String], RTLD_LAZY);
-       
-        if (handle == NULL) {
-			NSLog(@"[OpenSiri] 0_0 Error. Could not load dylib %@", [[OSControl dylibs] objectAtIndex:i]);
-			continue;
-		}
-        
-        NSLog(@"[OpenSiri] Loaded %@", [[OSControl dylibs] objectAtIndex:i]);
-
-		//void* cmdcallback = dlsym(handle, "OSCommand");
-        int (*cmdcallback)(NSString*) = (int (*)(NSString*))dlsym(handle, "OSActionString");
-		if (cmdcallback == NULL) {
-			NSLog(@"[OpenSiri] Error. Could not read function void* OSCommand(). Talk to the developer of %@ for troubleshooting.", [[OSControl dylibs] objectAtIndex:i]);
-			break;
-		}
-        
-        return cmdcallback(command);
-        //NSArray *cmdArr = (NSArray *)((void* (*)(void)) cmdcallback)();
-        
-//        for (int j=0; j<[cmdArr count]; j++) {
-//            if ([command caseInsensitiveCompare:[cmdArr objectAtIndex:j]] == NSOrderedSame) {   
-//                NSLog(@"[OpenSiri] dybib match found");
-//                return YES;
-//            }
-//        }
+    for (NSString *bundleStr in [OSControl bundles]) {
+        NSBundle *bundle = [NSBundle bundleWithPath:[[NSString stringWithFormat:BUNDLE_PATH] stringByAppendingString:bundleStr]];
+        NSError *err;
+        if (![bundle loadAndReturnError:&err]) {
+            NSLog(@"ERROR -- continuing");
+            continue;
+        }
+        Class pluginClass;
+        id plugin;
+        pluginClass = [bundle principalClass];
+        if ([pluginClass conformsToProtocol:@protocol(OSPlugin)]) {
+            plugin = [[pluginClass alloc] init];
+            if ([plugin OSRespondsToCommand:command]) {
+                return YES;
+            }
+        }
     }
     return NO;
 }
